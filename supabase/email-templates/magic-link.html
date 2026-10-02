@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <body style="margin:0;padding:0;background:#f3f0e8;font-family:Georgia,serif;color:#121814;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f3f0e8;padding:32px 16px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="480" cellspacing="0" cellpadding="0" style="background:#fffaf2;border:1px solid #c9c3b4;border-radius:8px;padding:32px;">
+            <tr>
+              <td>
+                <p style="margin:0 0 8px;font-size:28px;font-weight:700;color:#0f3d2e;">Floor</p>
+                <p style="margin:0 0 24px;font-size:15px;line-height:1.5;color:#3d4a40;">
+                  Your team login code (invite-only · play money).
+                </p>
+                <p style="margin:0 0 8px;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#3d4a40;">
+                  Code
+                </p>
+                <p style="margin:0 0 24px;font-size:32px;letter-spacing:0.2em;font-family:ui-monospace,monospace;color:#121814;">
+                  {{ .Token }}
+                </p>
+                <p style="margin:0 0 16px;font-size:14px;line-height:1.5;color:#3d4a40;">
+                  Or open this link:
+                </p>
+                <p style="margin:0 0 24px;">
+                  <a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#0f3d2e;color:#f3f0e8;text-decoration:none;padding:12px 18px;border-radius:6px;font-size:14px;">
+                    Sign in to Floor
+                  </a>
+                </p>
+                <p style="margin:0;font-size:12px;color:#3d4a40;">
+                  If you didn’t request this, ignore the email.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

@@ -21,22 +21,24 @@ Invite-only internal prediction markets for your team — Kalshi-style Yes/No co
 
 ## Setup
 
-### 1. Create a Supabase project
+See **[SETUP.md](SETUP.md)** for the full checklist (Auth URLs, SMTP, email templates, troubleshooting).
+
+### Quick start
+
+#### 1. Create a Supabase project
 
 1. Create a project at [supabase.com](https://supabase.com)
-2. Run the SQL migrations in order from [`supabase/migrations/`](supabase/migrations/) in the SQL editor (or via Supabase CLI: `supabase db push`)
-3. In **Authentication → URL configuration**, add your site URL and redirect `https://your-domain/auth/callback`
-4. Enable **Email** auth (magic link / OTP)
+2. Run the SQL migrations in order from [`supabase/migrations/`](supabase/migrations/) in the SQL editor
+3. Auth → URL configuration: Site URL `http://localhost:3000`, Redirect `http://localhost:3000/**`
+4. Enable Email provider; paste branded template from [`supabase/email-templates/magic-link.html`](supabase/email-templates/magic-link.html) when ready
 
-### 2. Seed the first invite
-
-Before anyone can sign in, insert your email (SQL editor, service role):
+#### 2. Seed the first invite
 
 ```sql
 insert into public.invites (email) values ('you@company.com');
 ```
 
-The first user to accept becomes **admin** and can invite others from **Invites**.
+Invites do **not** send email — they only authorize that address to request a login code.
 
 ### 3. Configure env
 

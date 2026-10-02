@@ -94,7 +94,31 @@ export async function signInWithEmail(formData: FormData) {
     return { error: error.message };
   }
 
-  return { ok: true as const };
+  return { ok: true as const, email };
+}
+
+export async function verifyEmailOtp(formData: FormData) {
+  const email = String(formData.get("email") ?? "")
+    .trim()
+    .toLowerCase();
+  const token = String(formData.get("token") ?? "").trim();
+  const next = String(formData.get("next") ?? "/dashboard");
+
+  if (!email) return { error: "Email is required." };
+  if (!token) return { error: "Enter the 6–8 digit code from the email." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.verifyOtp({
+    email,
+    token,
+    type: "email",
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  redirect(next.startsWith("/") ? next : "/dashboard");
 }
 
 export async function signOut() {
