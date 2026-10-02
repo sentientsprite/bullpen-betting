@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { formatDollars, availableBalance } from "@/lib/money";
+import { walletModeLabel } from "@/lib/wallet";
 import type { Profile } from "@/lib/types";
 import { signOut } from "@/lib/actions";
 
@@ -8,9 +9,10 @@ export function AppHeader({
   active,
 }: {
   profile: Profile;
-  active?: "dashboard" | "new" | "portfolio" | "invites";
+  active?: "dashboard" | "new" | "portfolio" | "invites" | "settings";
 }) {
   const avail = availableBalance(profile.balance_cents, profile.reserved_cents);
+  const mode = profile.wallet_mode ?? "free";
 
   return (
     <header className="border-b border-line/80 bg-surface backdrop-blur-md">
@@ -29,6 +31,9 @@ export function AppHeader({
             <NavLink href="/portfolio" active={active === "portfolio"}>
               Portfolio
             </NavLink>
+            <NavLink href="/settings" active={active === "settings"}>
+              Wallet
+            </NavLink>
             {profile.role === "admin" && (
               <NavLink href="/admin/invites" active={active === "invites"}>
                 Invites
@@ -37,14 +42,17 @@ export function AppHeader({
           </nav>
         </div>
         <div className="flex items-center gap-3">
-          <div className="animate-balance rounded-md border border-line bg-paper px-3 py-1.5 text-right">
+          <Link
+            href="/settings"
+            className="animate-balance rounded-md border border-line bg-paper px-3 py-1.5 text-right transition hover:border-brand"
+          >
             <div className="font-mono text-sm font-medium text-ink">
               {formatDollars(avail)}
             </div>
             <div className="text-[10px] uppercase tracking-wider text-ink-muted">
-              Play money
+              {walletModeLabel(mode)}
             </div>
-          </div>
+          </Link>
           <form action={signOut}>
             <button
               type="submit"
@@ -64,6 +72,9 @@ export function AppHeader({
         </NavLink>
         <NavLink href="/portfolio" active={active === "portfolio"}>
           Portfolio
+        </NavLink>
+        <NavLink href="/settings" active={active === "settings"}>
+          Wallet
         </NavLink>
         {profile.role === "admin" && (
           <NavLink href="/admin/invites" active={active === "invites"}>

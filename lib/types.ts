@@ -1,5 +1,11 @@
 export type UserRole = "member" | "admin";
 
+export type WalletMode = "free" | "linked";
+
+export type PaymentProvider = "cashapp" | "robinhood";
+
+export type ConnectionStatus = "connected" | "disconnected";
+
 export type MarketStatus = "proposed" | "live" | "resolved" | "cancelled";
 
 export type OutcomeSide = "yes" | "no";
@@ -18,9 +24,21 @@ export interface Profile {
   email: string;
   display_name: string | null;
   role: UserRole;
+  wallet_mode: WalletMode;
   balance_cents: number;
   reserved_cents: number;
   created_at: string;
+}
+
+export interface PaymentConnection {
+  id: string;
+  user_id: string;
+  provider: PaymentProvider;
+  handle: string;
+  status: ConnectionStatus;
+  display_name: string | null;
+  connected_at: string;
+  disconnected_at: string | null;
 }
 
 export interface Invite {

@@ -25,9 +25,10 @@ export default function HomePage() {
           Internal markets for questions your team actually cares about.
         </h1>
         <p className="animate-rise-delay-2 mt-4 max-w-xl text-lg text-ink-muted">
-          Kalshi-style Yes/No contracts. Invite-only by email. Play money on the
-          ledger — not real gambling. Suggest a pool; when two teammates confirm,
-          it goes live.
+          Kalshi-style Yes/No contracts. Invite-only by email. Run Free mode with
+          play money, or link Cash App / Robinhood. Balances stay on Floor&apos;s
+          ledger — not real gambling. Suggest a pool; two teammates confirm, it
+          goes live.
         </p>
         <div className="animate-rise-delay-2 mt-8 flex flex-wrap gap-3">
           <Link
@@ -49,7 +50,7 @@ export default function HomePage() {
         id="how"
         className="relative z-10 border-t border-line/70 bg-surface/80"
       >
-        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:grid-cols-3 sm:px-6">
+        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:grid-cols-2 lg:grid-cols-4 sm:px-6">
           <Step
             n="01"
             title="Invite by email"
@@ -57,11 +58,16 @@ export default function HomePage() {
           />
           <Step
             n="02"
+            title="Free or linked"
+            body="Stay in Free mode, or connect Cash App / Robinhood for Linked mode."
+          />
+          <Step
+            n="03"
             title="Suggest & confirm"
             body="Propose a market with your first bet. Two more teammates confirm and it goes live."
           />
           <Step
-            n="03"
+            n="04"
             title="Trade & resolve"
             body="Limit orders on a complementary book. Admins settle on the real outcome — honor system."
           />

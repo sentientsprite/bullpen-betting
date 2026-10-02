@@ -4,7 +4,13 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { clampPrice } from "@/lib/money";
-import type { OutcomeSide, Profile } from "@/lib/types";
+import type {
+  OutcomeSide,
+  PaymentConnection,
+  PaymentProvider,
+  Profile,
+  WalletMode,
+} from "@/lib/types";
 
 export async function getProfile(): Promise<Profile | null> {
   const supabase = await createClient();
@@ -19,7 +25,28 @@ export async function getProfile(): Promise<Profile | null> {
     .eq("id", user.id)
     .maybeSingle();
 
-  return data as Profile | null;
+  if (!data) return null;
+  // Back-compat if migration not applied yet
+  return {
+    ...(data as Profile),
+    wallet_mode: (data as Profile).wallet_mode ?? "free",
+  };
+}
+
+export async function getPaymentConnections(): Promise<PaymentConnection[]> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data } = await supabase
+    .from("payment_connections")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("connected_at", { ascending: false });
+
+  return (data ?? []) as PaymentConnection[];
 }
 
 export async function signInWithEmail(formData: FormData) {
@@ -205,4 +232,61 @@ export async function updateDisplayName(formData: FormData): Promise<void> {
 
   if (error) throw new Error(error.message);
   revalidatePath("/portfolio");
+}
+
+export async function setWalletMode(formData: FormData) {
+  const mode = String(formData.get("mode") ?? "") as WalletMode;
+  if (mode !== "free" && mode !== "linked") {
+    return { error: "Pick Free mode or Linked." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_wallet_mode", { p_mode: mode });
+  if (error) return { error: error.message };
+
+  revalidatePath("/settings");
+  revalidatePath("/portfolio");
+  revalidatePath("/dashboard");
+  revalidatePath("/markets/new");
+  return { ok: true as const };
+}
+
+export async function connectPayment(formData: FormData) {
+  const provider = String(formData.get("provider") ?? "") as PaymentProvider;
+  const handle = String(formData.get("handle") ?? "").trim();
+  const displayName = String(formData.get("display_name") ?? "").trim();
+
+  if (provider !== "cashapp" && provider !== "robinhood") {
+    return { error: "Pick Cash App or Robinhood." };
+  }
+  if (!handle) return { error: "Handle is required." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("connect_payment", {
+    p_provider: provider,
+    p_handle: handle,
+    p_display_name: displayName || null,
+  });
+  if (error) return { error: error.message };
+
+  revalidatePath("/settings");
+  revalidatePath("/portfolio");
+  return { ok: true as const };
+}
+
+export async function disconnectPayment(formData: FormData) {
+  const provider = String(formData.get("provider") ?? "") as PaymentProvider;
+  if (provider !== "cashapp" && provider !== "robinhood") {
+    return { error: "Invalid provider." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("disconnect_payment", {
+    p_provider: provider,
+  });
+  if (error) return { error: error.message };
+
+  revalidatePath("/settings");
+  revalidatePath("/portfolio");
+  return { ok: true as const };
 }

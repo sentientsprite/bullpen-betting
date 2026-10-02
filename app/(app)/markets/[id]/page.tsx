@@ -5,12 +5,13 @@ import { OrderBookPanel } from "@/components/order-book";
 import { OrderForm } from "@/components/order-form";
 import { ResolvePanel } from "@/components/resolve-panel";
 import { StatusChip } from "@/components/status-chip";
-import { getProfile } from "@/lib/actions";
+import { WalletGateBanner } from "@/components/wallet-gate-banner";
+import { cancelOrder, getPaymentConnections, getProfile } from "@/lib/actions";
 import { createClient } from "@/lib/supabase/server";
 import { buildOrderBook } from "@/lib/market/matching";
 import { formatCentsPrice, formatDollars } from "@/lib/money";
+import { canTrade } from "@/lib/wallet";
 import type { Market, Order, Position, Trade } from "@/lib/types";
-import { cancelOrder } from "@/lib/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,8 @@ export default async function MarketDetailPage({
   const { id } = await params;
   const profile = await getProfile();
   if (!profile) redirect("/sign-in");
+  const connections = await getPaymentConnections();
+  const tradeGate = canTrade(profile, connections);
 
   const supabase = await createClient();
   const { data: market } = await supabase
@@ -144,7 +147,11 @@ export default async function MarketDetailPage({
           </div>
 
           <div className="space-y-6">
-            <OrderForm marketId={m.id} disabled={!tradingOpen} />
+            {!tradeGate.ok && <WalletGateBanner reason={tradeGate.reason} />}
+            <OrderForm
+              marketId={m.id}
+              disabled={!tradingOpen || !tradeGate.ok}
+            />
 
             <div className="rounded-lg border border-line bg-surface p-4">
               <h2 className="font-display text-lg text-brand">Your position</h2>

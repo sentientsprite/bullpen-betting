@@ -62,8 +62,23 @@ export default async function PortfolioPage() {
         </div>
 
         <section className="mt-10 rounded-lg border border-line bg-surface p-5">
-          <h2 className="font-display text-lg text-brand">Profile</h2>
-          <p className="mt-1 text-sm text-ink-muted">{profile.email}</p>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="font-display text-lg text-brand">Profile</h2>
+              <p className="mt-1 text-sm text-ink-muted">{profile.email}</p>
+              <p className="mt-1 text-xs uppercase tracking-wider text-ink-muted">
+                {(profile.wallet_mode ?? "free") === "linked"
+                  ? "Linked mode"
+                  : "Free mode"}
+              </p>
+            </div>
+            <Link
+              href="/settings"
+              className="rounded-md border border-line bg-paper px-3 py-1.5 text-sm font-medium text-brand hover:border-brand"
+            >
+              Wallet & links
+            </Link>
+          </div>
           <form action={updateDisplayName} className="mt-4 flex flex-col gap-2 sm:flex-row">
             <input
               name="display_name"

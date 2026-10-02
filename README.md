@@ -7,9 +7,10 @@ Invite-only internal prediction markets for your team — Kalshi-style Yes/No co
 ## Features
 
 - **Email invites only** — magic-link sign-in; no public signup
+- **Free mode or Linked** — default play-money Free mode, or connect **Cash App** / **Robinhood** and switch to Linked
 - **Suggest → confirm → live** — a market goes live after **two other** teammates place bets
 - **Complementary CLOB** — buy Yes @ P matches buy No @ (100−P); maker price priority
-- **Play-money wallet** — $10,000 starting balance; reserves, fills, and settlements audited in a ledger
+- **In-app ledger** — $10,000 starting balance; reserves, fills, and settlements audited (no real ACH/transfers)
 - **Admin resolution** — designated admins settle Yes/No on the real-world outcome (honor system)
 
 ## Stack
@@ -64,6 +65,17 @@ Open [http://localhost:3000](http://localhost:3000).
 ```bash
 npm test
 ```
+
+## Wallet modes
+
+| Mode | Behavior |
+|------|----------|
+| **Free** (default) | Play-money credits only; no external account needed |
+| **Linked** | Requires a connected Cash App `$cashtag` or Robinhood username/email before trading |
+
+Connections store a handle for the team — they do **not** authorize payments, move funds, or talk to Cash App / Robinhood APIs. Settlements always stay on Floor’s ledger.
+
+Manage this under **Wallet** (`/settings`) after sign-in.
 
 ## Product rules (v1)
 

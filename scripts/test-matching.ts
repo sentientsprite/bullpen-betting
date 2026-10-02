@@ -4,7 +4,8 @@ import {
   findMatches,
   confirmationProgress,
 } from "../lib/market/matching";
-import type { Order } from "../lib/types";
+import { canTrade } from "../lib/wallet";
+import type { Order, PaymentConnection } from "../lib/types";
 
 function order(
   partial: Partial<Order> &
@@ -50,5 +51,21 @@ assert.equal(book.no_bids[0].qty, 5);
 
 assert.equal(confirmationProgress(2).ready, true);
 assert.equal(confirmationProgress(1).ready, false);
+
+assert.equal(canTrade({ wallet_mode: "free" }, []).ok, true);
+assert.equal(canTrade({ wallet_mode: "linked" }, []).ok, false);
+const linked: PaymentConnection[] = [
+  {
+    id: "1",
+    user_id: "u",
+    provider: "cashapp",
+    handle: "$alice",
+    status: "connected",
+    display_name: null,
+    connected_at: "2026-01-01T00:00:00Z",
+    disconnected_at: null,
+  },
+];
+assert.equal(canTrade({ wallet_mode: "linked" }, linked).ok, true);
 
 console.log("matching tests passed");
