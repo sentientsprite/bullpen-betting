@@ -1,114 +1,76 @@
 # Floor / Bullpen — setup checklist
 
-Invite rows do **not** send email. They only allow that address to request a login code.
-The email you wait for is the **OTP / magic link** from Supabase Auth after you submit the sign-in form.
+## Model
+
+- Each **company pool** has a shareable link: `/join/your-slug`
+- Anyone with the link enters **email → OTP** and joins that pool
+- **Betting is anonymous** (emails never shown on markets)
+- Invites table is auto-filled by the join flow (no separate invite email)
 
 ## Must have now
 
 ### 1. Migrations
-Run all files in `supabase/migrations/` in the Supabase SQL Editor (in order).
+Run **all** SQL files in `supabase/migrations/` in order, including:
+- `20261005120000_companies.sql`
 
-### 2. Seed invite
-```sql
-insert into public.invites (email) values ('raymondk@onlineimage.com');
--- verify:
-select * from public.invites;
-```
-
-### 3. Auth → URL configuration
-| Setting | Local value |
-|--------|-------------|
-| Site URL | `http://localhost:3000` |
+### 2. Auth → URL configuration
+| Setting | Values to add |
+|--------|----------------|
+| Site URL | `http://localhost:3000` (desktop) **or** `http://YOUR_LAN_IP:3000` (phones on Wi‑Fi) |
 | Redirect URLs | `http://localhost:3000/**` |
-| | `http://localhost:3000/auth/callback` |
 | | `http://127.0.0.1:3000/**` |
+| | `http://YOUR_LAN_IP:3000/**` (e.g. `http://192.168.1.119:3000/**`) |
 
-Add `127.0.0.1` variants if you open that host instead of `localhost`.
+`YOUR_LAN_IP` is the **Network:** URL Next prints when you run `npm run dev`.
 
-### 4. Auth → Providers → Email
-- Enable **Email**
-- Enable **Confirm email** if shown
-- Magic link / OTP: leave enabled (default)
-
-### 5. `.env.local`
+### 3. `.env.local`
 ```bash
-NEXT_PUBLIC_SUPABASE_URL=https://YOUR_REF.supabase.co
+NEXT_PUBLIC_SUPABASE_URL=https://dcujrkcwprvmbepprzeu.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
-# optional for scripts only — never expose to the browser
-SUPABASE_SERVICE_ROLE_KEY=eyJ...
+# Phones on same Wi‑Fi: use LAN IP so magic links work
+NEXT_PUBLIC_SITE_URL=http://192.168.1.119:3000
 ```
 
-Restart `npm run dev` after any env change.
+For desktop-only, `http://localhost:3000` is fine. Prefer **OTP code entry** either way.
 
-### 6. Sign in
-1. Open `http://localhost:3000/sign-in`
-2. Enter the invited email → **Email me a login code**
-3. Enter the **6–8 digit code** from the email (or spam)
-4. First successful user becomes **admin**
+### 4. Create your company pool
+1. Open `/start`
+2. Company name + slug + your email
+3. Enter OTP → you’re owner/admin
+4. Share `/join/your-slug` (also on Dashboard / Settings / Invites)
+
+### 5. Teammates
+They open the join link → email → OTP → in. No pre-seeded invite row needed.
 
 ---
 
 ## Worth adding soon
 
 ### Branded auth email
-Supabase → **Authentication → Email templates → Magic Link**  
-Paste HTML from [`supabase/email-templates/magic-link.html`](supabase/email-templates/magic-link.html).  
-Subject suggestion: `Your Floor login code`
+Paste [`supabase/email-templates/magic-link.html`](supabase/email-templates/magic-link.html) into Auth → Email templates → Magic Link.
 
-Also update **Confirm signup** / **Invite user** templates if you use them later.
+### Custom SMTP
+If OTP email never arrives (common on free Supabase mail), add Resend/Postmark under Project Settings → Auth → SMTP.
 
-### Rate limits
-Supabase → **Authentication → Rate Limits**  
-Keep defaults for an internal team. Raise only if teammates hit “email rate limit exceeded”.
+### Rate limits / JWT
+Keep defaults for an internal team.
 
-### JWT expiry
-Supabase → **Authentication → Settings → JWT expiry**  
-Default (~1 hour) is fine. Longer sessions = less re-login for a desk app; shorter = safer on shared machines.
+### Production
+Add `https://YOUR_DOMAIN/**` to redirect URLs and set `NEXT_PUBLIC_SITE_URL` on Vercel.
 
-### Production redirects (when you deploy)
-Add to Redirect URLs:
-- `https://YOUR_DOMAIN/auth/callback`
-- `https://YOUR_DOMAIN/**`
-
-Set `NEXT_PUBLIC_SITE_URL=https://YOUR_DOMAIN` in Vercel env.
-
-### Custom SMTP (fix email doesn’t arrive)
-Supabase free email is unreliable (spam / delay / silent drop).
-
-1. Create a Resend / Postmark / SendGrid account  
-2. Supabase → **Project Settings → Authentication → SMTP Settings**  
-3. Enable custom SMTP and paste host/user/pass/from  
-4. Send a test OTP again  
-
-Until then: check **Authentication → Logs** after each sign-in attempt.
-
-### Service role key
-Store in `.env.local` / Vercel **server-only** env (no `NEXT_PUBLIC_`).  
-Used only for privileged scripts — app RPCs already use `auth.uid()`.
-
-### Keep signup closed
-Do **not** enable public signup providers (Google, GitHub, anonymous).  
-Access = `invites` row + email OTP only.
+### Service role
+Optional server-only `SUPABASE_SERVICE_ROLE_KEY` — never `NEXT_PUBLIC_`.
 
 ---
 
-## Troubleshooting: nothing in inbox
-
-1. Confirm invite: `select * from public.invites where email = 'raymondk@onlineimage.com';`
-2. After clicking “Email me a login code”, open **Authentication → Logs** — look for `otp` / `magiclink` send  
-3. Check spam / promotions for `noreply@mail.app.supabase.io` (or your SMTP from-address)  
-4. Prefer entering the **numeric code** on the sign-in page (more reliable than the magic link locally)  
-5. If logs show no send: fix Email provider toggle + SMTP  
-6. If logs show send but no mail: add **custom SMTP** (above)
-
-## Sync this app into `bullpen-betting`
-
-From a checkout of `POLYMR-trading-bot` on `cursor/floor-internal-markets-b489`:
+## Sync into bullpen-betting
 
 ```bash
+cd ~/POLYMR-trading-bot
+git fetch origin cursor/floor-internal-markets-b489 && git checkout cursor/floor-internal-markets-b489 && git pull
 git subtree split -P floor -b bullpen-main
 git push https://github.com/sentientsprite/bullpen-betting.git bullpen-main:main --force
+cd ~/POLYMR-trading-bot/bullpen-betting && git pull
 ```
 
-Then on your Mac: `cd ~/POLYMR-trading-bot/bullpen-betting && git pull`.
+Then run the **new** companies migration in Supabase SQL Editor.

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/app-header";
 import { StatusChip } from "@/components/status-chip";
-import { getProfile } from "@/lib/actions";
+import { getActiveCompany, getProfile } from "@/lib/actions";
 import { createClient } from "@/lib/supabase/server";
 import { formatCentsPrice, formatProbability } from "@/lib/money";
 import { buildOrderBook, impliedYesPrice } from "@/lib/market/matching";
@@ -14,11 +14,22 @@ export default async function DashboardPage() {
   const profile = await getProfile();
   if (!profile) redirect("/sign-in");
 
+  const company = await getActiveCompany();
+  if (!company && !profile.active_company_id) {
+    redirect("/start");
+  }
+
   const supabase = await createClient();
-  const { data: markets } = await supabase
+  let marketsQuery = supabase
     .from("markets")
     .select("*")
     .order("created_at", { ascending: false });
+
+  if (profile.active_company_id) {
+    marketsQuery = marketsQuery.eq("company_id", profile.active_company_id);
+  }
+
+  const { data: markets } = await marketsQuery;
 
   const list = (markets ?? []) as Market[];
   const live = list.filter((m) => m.status === "live");
@@ -60,9 +71,18 @@ export default async function DashboardPage() {
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="font-display text-3xl text-brand">Markets</h1>
+            <h1 className="font-display text-3xl text-brand">
+              {company?.name ? `${company.name} markets` : "Markets"}
+            </h1>
             <p className="mt-1 text-sm text-ink-muted">
-              Live books and proposals waiting for confirmations.
+              Anonymous team pool · live books and proposals.
+              {company?.slug && (
+                <>
+                  {" "}
+                  Invite link:{" "}
+                  <span className="font-mono text-ink">/join/{company.slug}</span>
+                </>
+              )}
             </p>
           </div>
           <Link

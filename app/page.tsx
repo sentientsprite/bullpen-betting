@@ -25,24 +25,23 @@ export default function HomePage() {
           Internal markets for questions your team actually cares about.
         </h1>
         <p className="animate-rise-delay-2 mt-4 max-w-xl text-lg text-ink-muted">
-          Kalshi-style Yes/No contracts. Invite-only by email. Run Free mode with
-          play money, or link Cash App / Robinhood. Balances stay on Floor&apos;s
-          ledger — not real gambling. Suggest a pool; two teammates confirm, it
-          goes live.
+          Kalshi-style Yes/No contracts for your company pool. Share a /join
+          link — any email can request a code. Betting is anonymous. Free play
+          money, or link Cash App / Robinhood. Not real gambling.
         </p>
         <div className="animate-rise-delay-2 mt-8 flex flex-wrap gap-3">
           <Link
-            href="/sign-in"
+            href="/start"
             className="rounded-md bg-brand px-5 py-3 text-sm font-semibold text-paper transition hover:bg-brand-glow"
           >
-            Enter with invite
+            Start a company pool
           </Link>
-          <a
-            href="#how"
+          <Link
+            href="/sign-in"
             className="rounded-md border border-line bg-surface px-5 py-3 text-sm font-medium text-ink transition hover:border-brand"
           >
-            How it works
-          </a>
+            Team sign in
+          </Link>
         </div>
       </section>
 
@@ -53,23 +52,23 @@ export default function HomePage() {
         <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:grid-cols-2 lg:grid-cols-4 sm:px-6">
           <Step
             n="01"
-            title="Invite by email"
-            body="Admins add work emails. Magic-link sign-in only — no public signup."
+            title="Start a company pool"
+            body="Create your team space and get a shareable /join link."
           />
           <Step
             n="02"
-            title="Free or linked"
-            body="Stay in Free mode, or connect Cash App / Robinhood for Linked mode."
+            title="Anyone with the link"
+            body="Teammates enter their email, get a login code, and join. Betting stays anonymous."
           />
           <Step
             n="03"
             title="Suggest & confirm"
-            body="Propose a market with your first bet. Two more teammates confirm and it goes live."
+            body="Propose a market with your first bet. Two more confirm and it goes live."
           />
           <Step
             n="04"
             title="Trade & resolve"
-            body="Limit orders on a complementary book. Admins settle on the real outcome — honor system."
+            body="Limit orders on a complementary book. Admins settle on the real outcome."
           />
         </div>
       </section>

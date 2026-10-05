@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { AppHeader } from "@/components/app-header";
 import { StatusChip } from "@/components/status-chip";
-import { getProfile, updateDisplayName } from "@/lib/actions";
+import { getProfile } from "@/lib/actions";
 import { createClient } from "@/lib/supabase/server";
 import {
   availableBalance,
@@ -64,35 +64,25 @@ export default async function PortfolioPage() {
         <section className="mt-10 rounded-lg border border-line bg-surface p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 className="font-display text-lg text-brand">Profile</h2>
-              <p className="mt-1 text-sm text-ink-muted">{profile.email}</p>
+              <h2 className="font-display text-lg text-brand">Your account</h2>
+              <p className="mt-1 text-sm text-ink-muted">
+                Private to you — other traders never see your email.
+              </p>
+              <p className="mt-2 font-mono text-xs text-ink-muted">{profile.email}</p>
               <p className="mt-1 text-xs uppercase tracking-wider text-ink-muted">
                 {(profile.wallet_mode ?? "free") === "linked"
                   ? "Linked mode"
-                  : "Free mode"}
+                  : "Free mode"}{" "}
+                · anonymous betting
               </p>
             </div>
             <Link
               href="/settings"
               className="rounded-md border border-line bg-paper px-3 py-1.5 text-sm font-medium text-brand hover:border-brand"
             >
-              Wallet & links
+              Wallet & pool
             </Link>
           </div>
-          <form action={updateDisplayName} className="mt-4 flex flex-col gap-2 sm:flex-row">
-            <input
-              name="display_name"
-              defaultValue={profile.display_name ?? ""}
-              placeholder="Display name"
-              className="flex-1 rounded-md border border-line bg-paper px-3 py-2 text-sm outline-none focus:border-brand"
-            />
-            <button
-              type="submit"
-              className="rounded-md border border-line bg-paper px-4 py-2 text-sm font-medium hover:border-brand"
-            >
-              Save
-            </button>
-          </form>
         </section>
 
         <section className="mt-10">

@@ -54,6 +54,7 @@ export async function signInWithEmail(formData: FormData) {
     .trim()
     .toLowerCase();
   const next = String(formData.get("next") ?? "/dashboard");
+  const companySlug = String(formData.get("company_slug") ?? "").trim();
 
   if (!email) {
     return { error: "Email is required." };
@@ -61,19 +62,25 @@ export async function signInWithEmail(formData: FormData) {
 
   const supabase = await createClient();
 
-  const { data: invited, error: inviteError } = await supabase.rpc(
-    "check_invite",
-    { p_email: email },
-  );
-
-  if (inviteError) {
-    return { error: inviteError.message };
-  }
-  if (!invited) {
-    return {
-      error:
-        "This email is not invited. Ask a Floor admin to send you an invite.",
-    };
+  // Join-link flow: register intent + invite for this company first
+  if (companySlug) {
+    const { error: joinError } = await supabase.rpc("start_join", {
+      p_slug: companySlug,
+      p_email: email,
+    });
+    if (joinError) return { error: joinError.message };
+  } else {
+    const { data: invited, error: inviteError } = await supabase.rpc(
+      "check_invite",
+      { p_email: email },
+    );
+    if (inviteError) return { error: inviteError.message };
+    if (!invited) {
+      return {
+        error:
+          "Use your company join link (/join/your-company) or ask an admin for access.",
+      };
+    }
   }
 
   const siteUrl =
@@ -118,7 +125,62 @@ export async function verifyEmailOtp(formData: FormData) {
     return { error: error.message };
   }
 
+  // Attach membership if they came via /join
+  await supabase.rpc("complete_join");
+
   redirect(next.startsWith("/") ? next : "/dashboard");
+}
+
+export async function createCompany(formData: FormData) {
+  const name = String(formData.get("name") ?? "").trim();
+  const slug = String(formData.get("slug") ?? "").trim().toLowerCase();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+
+  if (!name || !slug || !email) {
+    return { error: "Name, slug, and email are required." };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("create_company", {
+    p_name: name,
+    p_slug: slug,
+    p_email: email,
+  });
+  if (error) return { error: error.message };
+
+  // Send OTP for the founder
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "http://localhost:3000");
+
+  const { error: otpError } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: `${siteUrl}/auth/callback?next=${encodeURIComponent("/dashboard")}`,
+      shouldCreateUser: true,
+    },
+  });
+  if (otpError) return { error: otpError.message };
+
+  return {
+    ok: true as const,
+    email,
+    slug: (data as { company?: { slug?: string } })?.company?.slug ?? slug,
+  };
+}
+
+export async function getActiveCompany() {
+  const profile = await getProfile();
+  if (!profile?.active_company_id) return null;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("companies")
+    .select("*")
+    .eq("id", profile.active_company_id)
+    .maybeSingle();
+  return data;
 }
 
 export async function signOut() {

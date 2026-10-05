@@ -35,7 +35,10 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) return response;
+    if (!error) {
+      await supabase.rpc("complete_join");
+      return response;
+    }
   }
 
   if (tokenHash && type) {
@@ -43,7 +46,10 @@ export async function GET(request: NextRequest) {
       type: type as "email" | "magiclink" | "signup" | "invite" | "recovery",
       token_hash: tokenHash,
     });
-    if (!error) return response;
+    if (!error) {
+      await supabase.rpc("complete_join");
+      return response;
+    }
   }
 
   return NextResponse.redirect(

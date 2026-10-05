@@ -38,7 +38,11 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/portfolio") ||
     path.startsWith("/settings") ||
     path.startsWith("/admin");
-  const isAuth = path.startsWith("/sign-in") || path.startsWith("/auth");
+  const isPublicAuth =
+    path.startsWith("/sign-in") ||
+    path.startsWith("/auth") ||
+    path.startsWith("/join") ||
+    path.startsWith("/start");
 
   if (isApp && !user) {
     const redirect = request.nextUrl.clone();
@@ -53,21 +57,24 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(redirect);
   }
 
-  if (isApp && user?.email) {
+  if (isApp && user?.email && !isPublicAuth) {
+    const { data: memberships } = await supabase
+      .from("memberships")
+      .select("company_id")
+      .eq("user_id", user.id)
+      .limit(1);
+
     const { data: invite } = await supabase
       .from("invites")
       .select("email")
       .eq("email", user.email.toLowerCase())
       .maybeSingle();
 
-    if (!invite && !isAuth) {
+    if ((!memberships || memberships.length === 0) && !invite) {
       const redirect = request.nextUrl.clone();
-      redirect.pathname = "/sign-in";
-      redirect.searchParams.set("error", "invite_required");
-      const res = NextResponse.redirect(redirect);
-      // Sign out uninvited users
-      await supabase.auth.signOut();
-      return res;
+      redirect.pathname = "/start";
+      redirect.searchParams.set("error", "no_company");
+      return NextResponse.redirect(redirect);
     }
   }
 

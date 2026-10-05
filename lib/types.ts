@@ -27,7 +27,23 @@ export interface Profile {
   wallet_mode: WalletMode;
   balance_cents: number;
   reserved_cents: number;
+  active_company_id: string | null;
   created_at: string;
+}
+
+export interface Company {
+  id: string;
+  name: string;
+  slug: string;
+  created_at?: string;
+}
+
+export interface Membership {
+  company_id: string;
+  user_id: string;
+  role: "owner" | "admin" | "member";
+  created_at: string;
+  company?: Company;
 }
 
 export interface PaymentConnection {
@@ -54,6 +70,7 @@ export interface Market {
   description: string | null;
   status: MarketStatus;
   created_by: string;
+  company_id?: string | null;
   resolved_outcome: OutcomeSide | null;
   resolved_by: string | null;
   resolved_at: string | null;
